@@ -74,7 +74,8 @@ const messages = {
     `இந்த ட்வீட்டில் விளக்கம் இல்லாமல் குறைந்தது ஒரு படமாவது உள்ளது ${tweet}`,
   tr: tweet =>
     `Tweet'iniz açıklama içermeyen bir ya da birden fazla resim barındırıyor ${tweet}`,
-  uk: tweet => `Принайні одне зображення у вашому твіті бракує опису ${tweet}`
+  uk: tweet => `Принайні одне зображення у вашому твіті бракує опису ${tweet}`,
+  yi: tweet => `${tweet} דיין טוויט האט אומווייניגסטענס איין בילד אן א באשרייבונג.`
 };
 
 function ts() {
