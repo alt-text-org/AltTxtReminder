@@ -57,6 +57,7 @@ const messages = {
     `თქვენს ტვიტში როგორც მინიმუმ ერთ სურათს ალტერნატიული ტექსტი არ გააჩნია ${tweet}`,
   ms: tweet =>
     `Tweet anda mempunyai sekurang-kurangnya satu gambar tanpa deskripsi ${tweet}`,
+  mk: tweet => `Вашиот твит има барем една слика без описен текст ${tweet}`,
   nb: tweet => `Din tweet har minst ett bilde uten beskrivelse ${tweet}`,
   ne: tweet => `तपाईंको ट्वीटमा कम्तिमा एउटा वर्णन बिनाको चित्र छ। ${tweet}`,
   nl: tweet =>
