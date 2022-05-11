@@ -33,6 +33,7 @@ const messages = {
 
   ar: tweet => `${tweet} تحتوي تغريدتك على صورة بدون وصف`,
   ca: tweet => `El teu tuit conté almenys una imatge sense descripció ${tweet}`,
+  cy: tweet => `Mae gan dy neges drydar o leiaf un ddelwedd heb ddisgrifiad ${tweet}`,   
   de: tweet =>
     `Dein Tweet enthält mindestens ein Bild ohne Bildbeschreibung ${tweet}`,
   en: tweet =>
