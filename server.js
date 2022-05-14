@@ -482,8 +482,12 @@ async function delist(twtr, userId, listId) {
 }
 
 function dedupLists(twtr) {
-    return () => {
-        const lists = getLists(twtr);
+    return async () => {
+        const lists = await getLists(twtr);
+
+        console.log("List status:")
+        lists.forEach(list => console.log(`${list.listId}: ${Object.keys(list.ids).length} users`))
+
         for (let i = 0; i < lists.length - 1; i++) {
             Object.keys(lists[i].ids).forEach(userId => {
                 for (let j = i + 1; j < lists.length; j++) {
@@ -517,6 +521,10 @@ async function run() {
 
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
+
+    console.log("Deduping...")
+    dedupLists(twtr)()
+    console.log("Finished deduping")
 
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
     setInterval(checkFollows(twtr), 5 * 60 * 1000);
