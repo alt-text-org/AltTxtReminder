@@ -281,7 +281,7 @@ async function getLists(twtr) {
 
 function chunk(arr, chunkSize) {
   let result = [];
-  for (var i = 0, len = arr.length; i < len; i += chunkSize) {
+  for (let i = 0, len = arr.length; i < len; i += chunkSize) {
     result.push(arr.slice(i, i + chunkSize));
   }
 
@@ -323,7 +323,7 @@ async function getFollowers(twtr) {
       count: 5000,
       stringify_ids: true,
       cursor: cursor
-    });
+    }).catch(e => console.log(e));
 
     batch.ids.forEach(id => followers.push(id));
     cursor = batch.next_cursor_str;
@@ -343,7 +343,7 @@ async function getFriends(twtr) {
       count: 5000,
       stringify_ids: true,
       cursor: cursor
-    });
+    }).catch(e => console.log(e));
 
     batch.ids.forEach(id => (friends[id] = true));
     cursor = batch.next_cursor_str;
@@ -353,42 +353,39 @@ async function getFriends(twtr) {
 }
 
 async function addToList(twtr, lists, userIds) {
-  if (userIds.length > 100) {
-    console.log(
-      `${ts()}: Got ${
-        userIds.length
-      } users to enlist, only enlisting the first 100`
+  const chunks = chunk(userIds, 100);
+
+  let results = chunks.map(async chunk => {
+    let list = lists.find(
+        list => Object.keys(list.ids).length + chunk.length <= 5000
     );
-    userIds = userIds.slice(0, 100);
-  }
 
-  let list = lists.find(
-    list => Object.keys(list.ids).length + userIds.length <= 5000
-  );
+    if (!list) {
+      throw { err: `Couldn't find list with room for ${chunk.length} users!` };
+    }
 
-  if (!list) {
-    throw { err: `Couldn't find list with room for ${userIds.length} users!` };
-  }
+    await twtr.accountsAndUsers
+        .listsMembersCreateAll({
+          list_id: list.listId,
+          user_id: chunk.join(",")
+        })
+        .then(() => {
+          console.log(
+              `${ts()}: Added ${chunk.join(", ")} to list ${list.listId}`
+          );
+          chunk.forEach(userId => (list.ids[userId] = true));
+        })
+        .catch(err => {
+          console.log(
+              `${ts()}: Error adding users ${chunk.join(", ")} to list ${
+                  list.listId
+              }`
+          );
+          console.log(err);
+        });
+  })
 
-  await twtr.accountsAndUsers
-    .listsMembersCreateAll({
-      list_id: list.listId,
-      user_id: userIds.join(",")
-    })
-    .then(() => {
-      console.log(
-        `${ts()}: Added ${userIds.join(", ")} to list ${list.listId}`
-      );
-      userIds.forEach(userId => (list.ids[userId] = true));
-    })
-    .catch(err => {
-      console.log(
-        `${ts()}: Error adding users ${userIds.join(", ")} to list ${
-          list.listId
-        }`
-      );
-      console.log(err);
-    });
+  await Promise.all(results).catch(e => console.log(`${ts()}: Error enlisting batch: ${e}`))
 }
 
 async function followUser(twtr, userId) {
@@ -461,7 +458,7 @@ function checkFollows(twtr) {
           await followUser(twtr, userId);
           console.log(`Successfully followed user: ${userId}`);
         } catch (err) {
-          console.log(`Failed to follow user: userId: ${JSON.stringify(err)}`);
+          console.log(`Failed to follow user: ${userId}: ${JSON.stringify(err)}`);
           try {
             let jsonErr = JSON.parse(err.data);
             if (jsonErr.errors[0].code === 160) {
