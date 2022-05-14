@@ -488,17 +488,24 @@ function dedupLists(twtr) {
         console.log("List status:")
         lists.forEach(list => console.log(`${list.listId}: ${Object.keys(list.ids).length} users`))
 
+        let dups = 0
         for (let i = 0; i < lists.length - 1; i++) {
-            const promises = Object.keys(lists[i].ids).map(async userId => {
-                for (let j = i + 1; j < lists.length; j++) {
-                    if (lists[j].ids[userId]) {
-                        await delist(twtr, userId, lists[j].listId)
+            const promises = Object.keys(lists[i].ids)
+                .filter(userId => lists[i].ids[userId])
+                .map(async userId => {
+                    for (let j = i + 1; j < lists.length; j++) {
+                        if (lists[j].ids[userId]) {
+                            // await delist(twtr, userId, lists[j].listId)
+                            dups++
+                            lists[j].ids[userId] = false
+                        }
                     }
-                }
-            })
+                })
 
             await Promise.all(promises).catch(e => `${ts()}: ${e}`);
         }
+
+        console.log(`${ts()}: Found ${dups} duplicate entries`);
     }
 }
 
