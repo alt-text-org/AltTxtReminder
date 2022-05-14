@@ -259,7 +259,7 @@ async function getLists(twtr) {
         });
     });
 
-    await Promise.all(promises).catch(e => console.log(e));
+    await Promise.all(promises).catch(e => console.log(JSON.stringify(e)));
 
     return lists;
 }
