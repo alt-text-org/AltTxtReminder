@@ -362,7 +362,7 @@ async function addToList(twtr, lists, userIds) {
             })
     })
 
-    await Promise.all(results).catch(e => console.log(`${ts()}: Error enlisting batch: ${e}`))
+    await Promise.all(results).catch(e => console.log(`${ts()}: Error enlisting batch: ${JSON.stringify(e)}`))
 }
 
 async function followUser(twtr, userId) {
