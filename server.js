@@ -1,7 +1,5 @@
 const fs = require("fs");
-const util = require("util");
 
-const datejs = require("datejs");
 const twitter = require("twitter-api-client");
 
 //users we've already attempted to follow but haven't accepted yet
