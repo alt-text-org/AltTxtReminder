@@ -495,7 +495,7 @@ function dedupLists(twtr) {
                 .map(async userId => {
                     for (let j = i + 1; j < lists.length; j++) {
                         if (lists[j].ids[userId]) {
-                            // await delist(twtr, userId, lists[j].listId)
+                            await delist(twtr, userId, lists[j].listId)
                             dups++
                             lists[j].ids[userId] = false
                         }
@@ -534,6 +534,10 @@ async function run() {
     console.log("Deduping...")
     await dedupLists(twtr)()
     console.log("Finished deduping")
+
+    console.log("Checking follows")
+    await checkFollows(twtr)()
+    console.log("Finished checking follows")
 
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
     setInterval(checkFollows(twtr), 5 * 60 * 1000);
