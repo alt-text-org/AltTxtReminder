@@ -352,9 +352,9 @@ async function addToList(twtr, lists, userIds) {
                 list_id: list.listId,
                 user_id: chunk.join(",")
             })
-            .then(() => {
+            .then(resp => {
                 console.log(
-                    `${ts()}: Added ${chunk.join(", ")} to list ${list.listId}`
+                    `${ts()}: Resp: ${JSON.stringify(resp)} Added ${chunk.join(", ")} to list ${list.listId}`
                 );
                 chunk.forEach(userId => list.ids[userId] = true);
             })
