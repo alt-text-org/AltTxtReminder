@@ -350,7 +350,7 @@ async function getFriends(twtr) {
 }
 
 async function addToList(twtr, lists, userIds) {
-    const chunks = chunk(userIds, 100);
+    const chunks = chunk(userIds, 33);
 
     let results = chunks.map(chunk => {
         let list = lists.find(
@@ -368,7 +368,7 @@ async function addToList(twtr, lists, userIds) {
             })
             .then(resp => {
                 console.log(
-                    `${ts()}: Resp: ${JSON.stringify(resp)} Added ${chunk.join(", ")} to list ${list.listId}`
+                    `${ts()}: Added ${chunk.join(", ")} to list ${list.listId}`
                 );
                 chunk.forEach(userId => list.ids[userId] = true);
             })
