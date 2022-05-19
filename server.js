@@ -306,7 +306,14 @@ async function getFollowers(twtr) {
             count: 5000,
             stringify_ids: true,
             cursor: cursor
-        }).catch(e => console.log(e));
+        }).catch(e => {
+            console.log(e);
+            return null;
+        });
+
+        if (!batch) {
+            return null;
+        }
 
         batch.ids.forEach(id => followers.push(id));
         cursor = batch.next_cursor_str;
@@ -326,7 +333,14 @@ async function getFriends(twtr) {
             count: 5000,
             stringify_ids: true,
             cursor: cursor
-        }).catch(e => console.log(e));
+        }).catch(e => {
+            console.log(e);
+            return null;
+        });
+
+        if (!batch) {
+            return null;
+        }
 
         batch.ids.forEach(id => (friends[id] = true));
         cursor = batch.next_cursor_str;
@@ -373,7 +387,17 @@ async function followUser(twtr, userId) {
 function checkFollows(twtr) {
     return async () => {
         let followers = await getFollowers(twtr);
+        if (!followers) {
+            console.log(`${ts()}: Failed to fetch followers!`);
+            return;
+        }
+
         let friends = await getFriends(twtr);
+        if (!friends) {
+            console.log(`${ts()}: Failed to fetch friends!`);
+            return;
+        }
+
         let lists = await getLists(twtr);
         let protectedUsers = await getProtectedUsers(twtr, followers);
 
@@ -529,13 +553,13 @@ async function run() {
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
 
-    console.log("Deduping...")
-    await dedupLists(twtr)()
-    console.log("Finished deduping")
-
-    console.log("Checking follows")
-    await checkFollows(twtr)()
-    console.log("Finished checking follows")
+    // console.log("Deduping...")
+    // await dedupLists(twtr)()
+    // console.log("Finished deduping")
+    //
+    // console.log("Checking follows")
+    // await checkFollows(twtr)()
+    // console.log("Finished checking follows")
 
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
     setInterval(checkFollows(twtr), 5 * 60 * 1000);
