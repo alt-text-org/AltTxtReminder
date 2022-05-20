@@ -578,8 +578,8 @@ function checkForNewTweets(twtr, lists) {
 async function run() {
     const twtr = new twitter.TwitterClient(config.twitterClientConfig);
     const twtr2 = new twitterV2.TwitterApi({
-        appKey: config.twitterClientConfig.accessToken,
-        appSecret: config.twitterClientConfig.accessTokenSecret
+        appKey: config.twitterClientConfig.apiKey,
+        appSecret: config.twitterClientConfig.apiSecret
     })
     let listsPromise = config.lists
         .map(async listId => {
