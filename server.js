@@ -592,6 +592,7 @@ async function run() {
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
 
+    await checkFollows(twtr,twtr2)();
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
     setInterval(checkFollows(twtr, twtr2), 5 * 60 * 1000);
     setInterval(dedupLists(twtr), 59 * 60 * 1000);
