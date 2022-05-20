@@ -1,6 +1,7 @@
 const fs = require("fs");
 
 const twitter = require("twitter-api-client");
+const twitterV2 = require("twitter-api-v2");
 
 //users we've already attempted to follow but haven't accepted yet
 const outstandingFollowRequests = [];
@@ -253,7 +254,8 @@ async function getLists(twtr) {
 
         lists.push({
             ids: memberIds,
-            listId: listId
+            listId: listId,
+            size: Object.keys(memberIds).length
         });
     });
 
@@ -349,6 +351,40 @@ async function getFriends(twtr) {
     return friends;
 }
 
+async function addToListV2(twtr2, lists, userIds) {
+    let added = [];
+    for (const userId of userIds) {
+        let list = lists.find(list => list.size < 5000);
+        if (!list) {
+            console.log(`${ts()}: No space available in any lists!`)
+            return;
+        }
+
+        let result = await twtr2.v2.addListMember(list.listId, userId)
+            .then(resp => {
+                if (resp.errors.length > 0) {
+                    console.log(`${ts()}: Failed to add member to list: ${JSON.stringify(resp.errors)}`);
+                    return false;
+                }
+
+                list.ids[userId] = true;
+                list.size++;
+                added.push(userId);
+                return true;
+            })
+            .catch(err => {
+                console.log(`${ts()}: Failed to add member to list: ${JSON.stringify(err)}`);
+                return false;
+            })
+
+        //Run until we fail
+        if (!result) {
+            break;
+        }
+    }
+    console.log(`${ts()}: Enlisted ${JSON.stringify(added)}`)
+}
+
 async function addToList(twtr, lists, userIds) {
     const chunks = chunk(userIds, 33);
 
@@ -384,7 +420,7 @@ async function followUser(twtr, userId) {
     });
 }
 
-function checkFollows(twtr) {
+function checkFollows(twtr, twtr2) {
     return async () => {
         let followers = await getFollowers(twtr);
         if (!followers) {
@@ -430,7 +466,7 @@ function checkFollows(twtr) {
             );
 
             try {
-                await addToList(twtr, lists, unlisted);
+                await addToListV2(twtr2, lists, unlisted);
             } catch (err) {
                 console.log(err);
             }
@@ -541,7 +577,10 @@ function checkForNewTweets(twtr, lists) {
 
 async function run() {
     const twtr = new twitter.TwitterClient(config.twitterClientConfig);
-
+    const twtr2 = new twitterV2.TwitterApi({
+        appKey: config.twitterClientConfig.accessToken,
+        appSecret: config.twitterClientConfig.accessTokenSecret
+    })
     let listsPromise = config.lists
         .map(async listId => {
             return await getListRecord(twtr, listId);
@@ -553,16 +592,8 @@ async function run() {
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
 
-    // console.log("Deduping...")
-    // await dedupLists(twtr)()
-    // console.log("Finished deduping")
-    //
-    // console.log("Checking follows")
-    // await checkFollows(twtr)()
-    // console.log("Finished checking follows")
-
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
-    setInterval(checkFollows(twtr), 5 * 60 * 1000);
+    setInterval(checkFollows(twtr, twtr2), 5 * 60 * 1000);
     setInterval(dedupLists(twtr), 59 * 60 * 1000);
 }
 
