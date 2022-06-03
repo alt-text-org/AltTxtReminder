@@ -580,18 +580,19 @@ function checkForNewTweets(twtr, lists) {
 
 async function run() {
     const twtr = new twitter.TwitterClient(config.twitterClientConfig);
-    const twtr2API = new twitterV2.TwitterApi({
-        appKey: config.twitterClientConfig.apiKey,
-        appSecret: config.twitterClientConfig.apiSecret,
-        accessToken: config.twitterClientConfig.oauthToken,
-        accessSecret: config.twitterClientConfig.oauthTokenSecret
-    })
-    const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin)
-        .catch(e => {
-            console.log(e)
-            return null;
-        });
-
+    // const twtr2API = new twitterV2.TwitterApi({
+    //     appKey: config.twitterClientConfig.apiKey,
+    //     appSecret: config.twitterClientConfig.apiSecret,
+    //     accessToken: config.twitterClientConfig.oauthToken,
+    //     accessSecret: config.twitterClientConfig.oauthTokenSecret
+    // })
+    // const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin)
+    //     .catch(e => {
+    //         console.log(e)
+    //         return null;
+    //     });
+    const twtr2 = null;
+    
     let listsPromise = config.lists
         .map(async listId => {
             return await getListRecord(twtr, listId);
