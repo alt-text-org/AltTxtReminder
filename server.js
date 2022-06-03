@@ -586,7 +586,11 @@ async function run() {
         accessToken: config.twitterClientConfig.oauthToken,
         accessSecret: config.twitterClientConfig.oauthTokenSecret
     })
-    const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin);
+    const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin)
+        .catch(e => {
+            console.log(e)
+            return null;
+        });
 
     let listsPromise = config.lists
         .map(async listId => {
