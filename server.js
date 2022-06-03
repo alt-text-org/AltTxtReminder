@@ -18,6 +18,9 @@ const config = {
         accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
         apiKey: process.env.TWITTER_CONSUMER_KEY,
         apiSecret: process.env.TWITTER_CONSUMER_SECRET,
+        oauthToken: process.env.TWITTER_OAUTH_TOKEN,
+        oauthTokenSecret: process.env.TWITTER_OAUTH_TOKEN_SECRET,
+        oauthPin: process.env.TWITTER_OAUTH_PIN,
         disableCache: true
     }
 };
@@ -579,9 +582,11 @@ async function run() {
     const twtr = new twitter.TwitterClient(config.twitterClientConfig);
     const twtr2API = new twitterV2.TwitterApi({
         appKey: config.twitterClientConfig.apiKey,
-        appSecret: config.twitterClientConfig.apiSecret
+        appSecret: config.twitterClientConfig.apiSecret,
+        accessToken: config.twitterClientConfig.oauthToken,
+        accessSecret: config.twitterClientConfig.oauthTokenSecret
     })
-    const twtr2 = await twtr2API.appLogin();
+    const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin);
 
     let listsPromise = config.lists
         .map(async listId => {
@@ -594,7 +599,7 @@ async function run() {
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
 
-    await checkFollows(twtr,twtr2)();
+    await checkFollows(twtr, twtr2)();
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
     setInterval(checkFollows(twtr, twtr2), 5 * 60 * 1000);
     setInterval(dedupLists(twtr), 59 * 60 * 1000);
