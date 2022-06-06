@@ -9,7 +9,7 @@ const config = {
 
 async function go() {
     const client = new twitterV2.TwitterApi({ appKey: config.apiKey, appSecret: config.apiSecret });
-    const authLink = await client.generateAuthLink()
+    const authLink = await client.generateAuthLink("oob")
     console.log(JSON.stringify(authLink))
 }
 

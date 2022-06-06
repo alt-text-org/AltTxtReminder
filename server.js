@@ -365,7 +365,7 @@ async function addToListV2(twtr2, lists, userIds) {
 
         let result = await twtr2.v2.addListMember(list.listId, userId)
             .then(resp => {
-                if (resp.errors.length > 0) {
+                if (resp.errors && resp.errors.length > 0) {
                     console.log(`${ts()}: Failed to add member to list: ${JSON.stringify(resp.errors)}`);
                     return false;
                 }
@@ -486,7 +486,7 @@ function checkFollows(twtr, twtr2) {
             console.log(
                 `Currently ${outstandingFollowRequests.length} accounts are outstanding follow requests.`
             );
-            //lets only try to follow 5 users at a time max
+            //let's only try to follow 5 users at a time max
             let followersToFollow = unfollowed.slice(0, 8);
             console.log(
                 `${ts()}: Attempting to follow ${followersToFollow.length} users`
@@ -580,19 +580,23 @@ function checkForNewTweets(twtr, lists) {
 
 async function run() {
     const twtr = new twitter.TwitterClient(config.twitterClientConfig);
-    // const twtr2API = new twitterV2.TwitterApi({
-    //     appKey: config.twitterClientConfig.apiKey,
-    //     appSecret: config.twitterClientConfig.apiSecret,
-    //     accessToken: config.twitterClientConfig.oauthToken,
-    //     accessSecret: config.twitterClientConfig.oauthTokenSecret
-    // })
-    // const { client: twtr2 } = await twtr2API.login(config.twitterClientConfig.oauthPin)
-    //     .catch(e => {
-    //         console.log(e)
-    //         return null;
-    //     });
-    const twtr2 = null;
-    
+    const twtr2API = new twitterV2.TwitterApi({
+        appKey: config.twitterClientConfig.apiKey,
+        appSecret: config.twitterClientConfig.apiSecret,
+        accessToken: config.twitterClientConfig.oauthToken,
+        accessSecret: config.twitterClientConfig.oauthTokenSecret
+    })
+    const loggedIn = await twtr2API.login(config.twitterClientConfig.oauthPin)
+        .catch(e => {
+            console.log(e)
+            return null;
+        });
+
+    if (!loggedIn) {
+        console.log(`${ts()}: Failed to log in`)
+        return
+    }
+
     let listsPromise = config.lists
         .map(async listId => {
             return await getListRecord(twtr, listId);
@@ -604,9 +608,9 @@ async function run() {
     console.log(`${ts()}: Found lists:`);
     console.log(lists);
 
-    await checkFollows(twtr, twtr2)();
+    await checkFollows(twtr, loggedIn.client)();
     setInterval(checkForNewTweets(twtr, lists), lists.length * 1500);
-    setInterval(checkFollows(twtr, twtr2), 5 * 60 * 1000);
+    setInterval(checkFollows(twtr, loggedIn.client), 5 * 60 * 1000);
     setInterval(dedupLists(twtr), 59 * 60 * 1000);
 }
 
